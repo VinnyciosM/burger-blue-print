@@ -1,4 +1,7 @@
-# Logs
+.DS_Store
+Thumbs.db
+Desktop.ini
+
 logs
 *.log
 npm-debug.log*
@@ -7,33 +10,20 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-.DS_Store
-dist
-dist-ssr
-coverage
-*.local
-
-# Editor directories and files
+.idea/
 .vscode/*
 !.vscode/extensions.json
-.idea
+!.vscode/launch.json
+!.vscode/*.code-snippets
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-*.tsbuildinfo
+node_modules/
 
-.eslintcache
-
-# Cypress
-/cypress/videos/
-/cypress/screenshots/
-
-# Vitest
-__screenshots__/
-
-# Vite
-*.timestamp-*-*.mjs
+.env
+.env.*
+!.env.example
+.dev.vars

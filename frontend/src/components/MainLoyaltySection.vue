@@ -19,7 +19,7 @@ const submitCode = () => {
 </script>
 
 <template>
-  <div class="mobile-container">
+  <div class="container">
     <main class="content">
       <div class="logo-container">
         <div class="placeholder-logo">
@@ -65,19 +65,12 @@ const submitCode = () => {
 </template>
 
 <style scoped>
-.mobile-container {
+.container {
   color: white;
+  max-width: 600px;
+  
 }
 
-.icon-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-}
-
-/* Conteúdo */
 .content {
   flex: 1;
   display: flex;
@@ -87,7 +80,6 @@ const submitCode = () => {
   text-align: center;
 }
 
-/* Logo Simulado */
 .placeholder-logo {
   margin-bottom: 20px;
 }
@@ -163,11 +155,6 @@ const submitCode = () => {
   line-height: 1.4;
 }
 
-.highlight {
-  color: #f59e0b;
-  font-weight: bold;
-}
-
 /* Input */
 .input-wrapper {
   display: flex;
@@ -222,50 +209,5 @@ const submitCode = () => {
 .join-btn:active {
   transform: translateY(4px);
   box-shadow: 0 1px 0 #7f1d1d;
-}
-
-/* Login */
-.login-text {
-  font-size: 0.9rem;
-  color: #ccc;
-}
-.login-text a {
-  color: #f59e0b;
-  font-weight: bold;
-}
-
-/* Nav Inferior */
-.bottom-nav {
-  background: rgba(20, 5, 5, 0.95);
-  display: flex;
-  justify-content: space-around;
-  padding: 15px 10px 30px 10px; /* Padding bottom extra para safe area de celular */
-  border-top: 1px solid #3a1010;
-}
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.7rem;
-  color: #cfa6a6;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.nav-item.active {
-  color: #f59e0b;
-}
-
-.glow-box {
-  background: rgba(245, 158, 11, 0.15); /* Brilho laranja */
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 </style>
