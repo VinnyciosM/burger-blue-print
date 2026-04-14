@@ -20,10 +20,10 @@ const exportAsImage = () => {
     allowTaint: true,
     useCORS: true,
     backgroundColor: '#ffffff',
-    scale: 3
+    scale: 3 
   }).then((canvas) => {
     const link = document.createElement('a')
-    link.download = `guia-drakon-full.png`
+    link.download = `guia-drakon-final.png`
     link.href = canvas.toDataURL("image/png")
     link.click()
     element.classList.remove('clean')
@@ -40,21 +40,33 @@ const exportAsImage = () => {
 
     <div class="canvas-area" :class="{ 'fullscreen': isPreviewMode }">
       <div v-if="isPreviewMode" class="overlay" @click="togglePreview"></div>
-
+      
       <div v-if="isPreviewMode" class="toolbar">
         <button class="btn-save" @click="exportAsImage">BAIXAR IMAGEM</button>
         <button class="btn-exit" @click="togglePreview">FECHAR</button>
       </div>
 
       <div class="a4-sheet" :class="{ 'clean': isPreviewMode }" id="printable-a4">
-        <div v-for="(guide, index) in guides" :key="index" class="column"
+        <div v-for="(guide, index) in guides" :key="index"
+          class="column" 
           :class="{ 'active': activeIndex === index && !isPreviewMode }"
-          @click="!isPreviewMode && $emit('update:activeIndex', index)">
+          @click="!isPreviewMode && $emit('update:activeIndex', index)"
+        >
+          <div v-if="!isPreviewMode && activeIndex === index" class="edit-badge">
+            EDITANDO
+          </div>
+
           <h3 class="guide-title">{{ guide.name || `GUIA ${index + 1}` }}</h3>
 
           <div class="layers-list">
             <div v-for="layer in guide.layers" :key="layer.instanceId" class="layer-item">
+              
               <img :src="layer.image" class="ingredient-img" />
+              
+              <div class="info">
+                <span class="layer-name">{{ layer.name }}</span>
+              </div>
+
             </div>
             <div v-if="guide.layers.length === 0" class="empty-msg">VAZIO</div>
           </div>
@@ -65,205 +77,93 @@ const exportAsImage = () => {
 </template>
 
 <style scoped>
-/* Base */
-.sidebar {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  background: #f3f4f6;
-  overflow: hidden;
+/* --- BASE & LAYOUT GERAL --- */
+.sidebar { flex: 1; display: flex; flex-direction: column; padding: 20px; background: #f3f4f6; overflow: hidden; }
+.header { padding: 20px; border: 2px dashed #d1d5db; border-radius: 12px; margin-bottom: 20px; text-align: center; }
+.label { display: block; font-size: 10px; font-weight: 900; color: #9ca3af; letter-spacing: 2px; margin-bottom: 15px; }
+
+button { font-weight: 900; cursor: pointer; border: none; border-radius: 6px; transition: background 0.2s; }
+.btn-primary { background: #3b82f6; color: #fff; padding: 12px 24px; }
+.btn-save { background: #fb923c; color: #fff; padding: 10px 20px; }
+.btn-exit { background: rgba(255,255,255,0.1); color: #fff; padding: 10px 20px; }
+.btn-exit:hover { background: #ef4444; }
+
+/* --- A4 SHEET (Visualizador Base / Reduzido) --- */
+.canvas-area { flex: 1; display: flex; justify-content: center; align-items: center; min-height: 0; }
+.a4-sheet { background: #fff; aspect-ratio: 297/210; width: 100%; display: flex; position: relative; z-index: 10; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+.column { flex: 1; padding: 15px 8px; display: flex; flex-direction: column; border-right: 1px dashed #e5e7eb; position: relative; cursor: pointer; }
+.column:last-child { border: none; }
+.active { background: #fffaf7; box-shadow: inset 0 0 0 2px #fb923c; z-index: 2; }
+.edit-badge { position: absolute; top: 8px; right: 10px; font-size: 7px; font-weight: 900; color: #fb923c; }
+
+.guide-title { font-size: 11px; font-weight: 900; text-align: center; border-bottom: 2px solid #fb923c; padding-bottom: 8px; margin-bottom: 15px; text-transform: uppercase; color: #111827; }
+
+/* --- ESTRUTURA UNIFICADA (Side-by-Side) --- */
+.layers-list { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 4px; min-height: 0; }
+
+.layer-item { 
+  flex: 1; 
+  display: flex; 
+  align-items: center; 
+  justify-content: flex-start; /* Imagem na esquerda, texto na direita */
+  min-height: 0; 
+  max-height: 150px; 
+  width: 100%; 
 }
 
-.header {
-  padding: 20px;
-  border: 2px dashed #d1d5db;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  text-align: center;
+/* Imagem Base (Visualizador Reduzido) */
+.ingredient-img { 
+  max-width: 120px; /* CONSTRAINT: Limite menor para caber na tela de edição */
+  height: 100%; 
+  width: auto; 
+  object-fit: contain; 
+  mix-blend-mode: multiply; 
 }
 
-.label {
-  display: block;
-  font-size: 10px;
-  font-weight: 900;
-  color: #9ca3af;
-  letter-spacing: 2px;
-  margin-bottom: 15px;
+/* Texto Base (Ambos os modos) */
+.info { 
+  display: flex; 
+  align-items: center; 
+  padding-left: 8px; 
+  flex: 1; 
+  min-width: 0; 
 }
 
-/* Botões UI */
-button {
-  font-weight: 900;
-  cursor: pointer;
-  border: none;
-  border-radius: 6px;
+.layer-name { 
+  font-size: 7px; 
+  font-weight: 800; 
+  color: #4b5563; 
+  text-transform: uppercase; 
+  line-height: 1.1; 
+  white-space: normal; 
+  word-wrap: break-word; 
 }
 
-.btn-primary {
-  background: #3b82f6;
-  color: #fff;
-  padding: 12px 24px;
+/* --- MODO PREVIEW / FULLSCREEN (Escala Aumentada) --- */
+.fullscreen .a4-sheet { width: auto; height: 98vh; z-index: 20; }
+.fullscreen .column { padding: 10px 8px; }
+.fullscreen .guide-title { font-size: 14px; margin-bottom: 15px; padding-bottom: 10px; }
+.fullscreen .layers-list { gap: 2px; }
+
+/* Escala vertical maior no Fullscreen */
+.fullscreen .layer-item { max-height: 250px; }
+
+/* Escala horizontal maior no Fullscreen */
+.fullscreen .ingredient-img { 
+  max-width: 290px !important; /* CONSTRAINT: Limite de 290px conforme solicitado */
 }
 
-.btn-save {
-  background: #fb923c;
-  color: #fff;
-  padding: 10px 20px;
-}
+/* Ajustes de tipografia e espaçamento para o Fullscreen */
+.fullscreen .info { padding-left: 12px; }
+.fullscreen .layer-name { font-size: 9px; }
 
-.btn-exit {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  padding: 10px 20px;
-}
-
-.btn-exit:hover {
-  background: #ef4444;
-}
-
-/* Visualizador */
-.canvas-area {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 0;
-}
-
-.a4-sheet {
-  background: #fff;
-  aspect-ratio: 297/210;
-  width: 100%;
-  display: flex;
-  position: relative;
-  z-index: 10;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* Colunas (Visualizador Reduzido) */
-.column {
-  flex: 1;
-  padding: 15px 8px;
-  display: flex;
-  flex-direction: column;
-  border-right: 1px dashed #e5e7eb;
-  position: relative;
-  cursor: pointer;
-}
-
-.column:last-child {
-  border: none;
-}
-
-.active {
-  background: #fffaf7;
-  box-shadow: inset 0 0 0 2px #fb923c;
-  z-index: 2;
-}
-
-.guide-title {
-  font-size: 11px;
-  font-weight: 900;
-  text-align: center;
-  border-bottom: 2px solid #fb923c;
-  padding-bottom: 8px;
-  margin-bottom: 15px;
-  text-transform: uppercase;
-  color: #111827;
-}
-
-/* Listagem Visual */
-.layers-list {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  min-height: 0;
-}
-
-.layer-item {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 0;
-  max-height: 180px;
-  width: 100%;
-}
-
-.ingredient-img {
-  max-width: 98%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  mix-blend-mode: multiply;
-}
-
-/* --- AJUSTES PARA O VISUALIZADOR COMPLETO (Aumentar Imagens) --- */
-.fullscreen .a4-sheet {
-  width: auto;
-  height: 98vh;
-  z-index: 20;
-}
-
-.fullscreen .column {
-  padding: 10px 5px;
-}
-
-/* Menos margem = mais espaço para imagem */
-.fullscreen .guide-title {
-  font-size: 14px;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-}
-
-.fullscreen .layer-item {
-  max-height: 250px;
-}
-
-/* Permite que a imagem cresça muito mais se houver espaço */
-.fullscreen .layers-list {
-  gap: 2px;
-}
-
-/* Fullscreen Overlay */
-.fullscreen {
-  position: fixed;
-  inset: 0;
-  padding: 5px;
-  z-index: 999;
-}
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(17, 24, 39, 0.98);
-  z-index: 5;
-}
-
-.toolbar {
-  position: absolute;
-  top: 20px;
-  right: 30px;
-  display: flex;
-  gap: 10px;
-  z-index: 1000;
-}
+/* Fullscreen Overlays */
+.fullscreen { position: fixed; inset: 0; padding: 5px; z-index: 999; }
+.overlay { position: absolute; inset: 0; background: rgba(17,24,39,0.98); z-index: 5; }
+.toolbar { position: absolute; top: 20px; right: 30px; display: flex; gap: 10px; z-index: 1000; }
 
 /* Limpeza PNG */
-.clean .active {
-  background: none !important;
-  box-shadow: none !important;
-  border-right: 1px dashed #e5e7eb !important;
-}
-
-.empty-msg {
-  margin: auto;
-  font-size: 9px;
-  font-weight: 900;
-  color: #d1d5db;
-}
+.clean .active { background: none !important; box-shadow: none !important; border-right: 1px dashed #e5e7eb !important; }
+.empty-msg { margin: auto; font-size: 9px; font-weight: 900; color: #d1d5db; }
 </style>
