@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import ingredientsData from '../ingredients.json'
+import NewIngredientCard from './NewIngredientCard.vue'
 
 const emit = defineEmits(['select-ingredient'])
 
@@ -46,15 +47,17 @@ const selectIngredient = (ingredient) => {
 
 <template>
   <aside class="sidebar">
-    <div class="sidebar-header">
-      <h2 class="title">DESPENSA</h2>
-      <input 
-        v-model="searchQuery"
-        type="text" 
-        placeholder="Buscar ingrediente..." 
-        class="search-input"
-      />
-    </div>
+    <div class="search-row">
+        <input 
+          type="text" 
+          v-model="searchQuery" 
+          placeholder="Buscar ingrediente..." 
+          class="search-input"
+        />
+        <button class="btn-add-quick" @click="isNewModalOpen = true" title="Novo Ingrediente">
+          +
+        </button>
+      </div>
 
     <nav class="category-tabs">
       <button 
@@ -94,7 +97,14 @@ const selectIngredient = (ingredient) => {
         </div>
       </section>
     </div>
+    <div class="sidebar-footer">
+      <button class="btn-catalog" @click="isCatalogModalOpen = true">
+        <span class="icon">📋</span>
+        VER BIBLIOTECA COMPLETA
+      </button>
+    </div>
   </aside>
+ <!--  <NewIngredientCard/> -->
 </template>
 
 <style scoped>
@@ -223,4 +233,60 @@ const selectIngredient = (ingredient) => {
 /* Scrollbar fina */
 .scroll-container::-webkit-scrollbar { width: 4px; }
 .scroll-container::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
+
+/* Container pai (a Sidebar) */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Linha da Busca */
+.search-row {
+  display: flex;
+  gap: 8px;
+  padding: 10px 0;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.btn-add-quick {
+  width: 42px;
+  background: #fb923c; /* Laranja Drakon */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Rodapé Fixo */
+.sidebar-footer {
+  padding: 15px 20px;
+  background: #fff;
+  border-top: 1px solid #f3f4f6;
+  margin-top: auto; /* Joga o rodapé para o final do flex */
+}
+
+.btn-catalog {
+  width: 100%;
+  padding: 12px;
+  background: #111827; /* Dark Drakon */
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
 </style>
