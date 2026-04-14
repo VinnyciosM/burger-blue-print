@@ -4,30 +4,48 @@ import IngredientSidebar from './components/IngredientSidebar.vue'
 import BurgerBuilder from './components/BurgerBuilder.vue'
 import ActionSidebar from './components/ActionSidebar.vue'
 
-// 1. Estado centralizado do nome e das camadas
-const burgerName = ref('')
-const burgerLayers = ref([])
+// --- STATE MANAGEMENT ---
 
+// Index of the guide currently being edited (0, 1, or 2)
+const activeIndex = ref(0)
+
+// Array containing the data for all 3 guides on the A4 sheet
+const guides = ref([
+  { name: '', layers: [] }, // Guide 1
+  { name: '', layers: [] }, // Guide 2
+  { name: '', layers: [] }  // Guide 3
+])
+
+// --- METHODS ---
+
+/**
+ * Adds a new ingredient to the top of the currently active guide
+ * @param {Object} ingredient - The ingredient object from JSON
+ */
 const handleSelectIngredient = (ingredient) => {
-  burgerLayers.value.unshift({
+  // We use unshift to add to the top (visual stack order)
+  guides.value[activeIndex.value].layers.unshift({
     ...ingredient,
-    instanceId: Date.now() + Math.random()
+    instanceId: Date.now() + Math.random() // Unique ID for Vue's v-for and Drag & Drop
   })
 }
 </script>
 
 <template>
   <div class="app-layout">
-    <IngredientSidebar @select-ingredient="handleSelectIngredient" />
+    <IngredientSidebar 
+      @select-ingredient="handleSelectIngredient" 
+    />
     
     <BurgerBuilder 
-      v-model="burgerName" 
-      v-model:layers="burgerLayers" 
+      :key="`builder-${activeIndex}`"
+      v-model="guides[activeIndex].name" 
+      v-model:layers="guides[activeIndex].layers" 
     />
     
     <ActionSidebar 
-      :layers="burgerLayers" 
-      :name="burgerName" 
+      :guides="guides" 
+      v-model:activeIndex="activeIndex" 
     />
   </div>
 </template>

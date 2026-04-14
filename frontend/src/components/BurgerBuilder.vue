@@ -112,6 +112,7 @@ const removeLayer = (index) => {
   flex-direction: column;
   padding: 0; /* Removido padding para o header ocupar tudo */
   border-right: 1px solid #eee;
+  max-width: 400px;
 }
 
 /* --- ESTILO DO NOVO HEADER --- */
@@ -135,7 +136,7 @@ const removeLayer = (index) => {
 }
 
 .burger-name-input {
-  width: 100%;
+  width: 95%;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
   padding: 10px 12px;
