@@ -23,7 +23,7 @@ const exportAsImage = () => {
     scale: 3
   }).then((canvas) => {
     const link = document.createElement('a')
-    link.download = `guia-drakon-full.png`
+    link.download = `guia-drakon-final.png`
     link.href = canvas.toDataURL("image/png")
     link.click()
     element.classList.remove('clean')
@@ -50,11 +50,21 @@ const exportAsImage = () => {
         <div v-for="(guide, index) in guides" :key="index" class="column"
           :class="{ 'active': activeIndex === index && !isPreviewMode }"
           @click="!isPreviewMode && $emit('update:activeIndex', index)">
+          <div v-if="!isPreviewMode && activeIndex === index" class="edit-badge">
+            EDITANDO
+          </div>
+
           <h3 class="guide-title">{{ guide.name || `GUIA ${index + 1}` }}</h3>
 
           <div class="layers-list">
             <div v-for="layer in guide.layers" :key="layer.instanceId" class="layer-item">
+
               <img :src="layer.image" class="ingredient-img" />
+
+              <div class="info">
+                <span class="layer-name">{{ layer.name }}</span>
+              </div>
+
             </div>
             <div v-if="guide.layers.length === 0" class="empty-msg">VAZIO</div>
           </div>
@@ -65,7 +75,7 @@ const exportAsImage = () => {
 </template>
 
 <style scoped>
-/* Base */
+/* --- BASE & LAYOUT GERAL --- */
 .sidebar {
   flex: 1;
   display: flex;
@@ -92,12 +102,12 @@ const exportAsImage = () => {
   margin-bottom: 15px;
 }
 
-/* Botões UI */
 button {
   font-weight: 900;
   cursor: pointer;
   border: none;
   border-radius: 6px;
+  transition: background 0.2s;
 }
 
 .btn-primary {
@@ -122,7 +132,7 @@ button {
   background: #ef4444;
 }
 
-/* Visualizador */
+/* --- A4 SHEET (Visualizador Base / Reduzido) --- */
 .canvas-area {
   flex: 1;
   display: flex;
@@ -141,7 +151,6 @@ button {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Colunas (Visualizador Reduzido) */
 .column {
   flex: 1;
   padding: 15px 8px;
@@ -162,6 +171,15 @@ button {
   z-index: 2;
 }
 
+.edit-badge {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 7px;
+  font-weight: 900;
+  color: #fb923c;
+}
+
 .guide-title {
   font-size: 11px;
   font-weight: 900;
@@ -173,12 +191,13 @@ button {
   color: #111827;
 }
 
-/* Listagem Visual */
+/* --- ESTRUTURA UNIFICADA (Side-by-Side) --- */
 .layers-list {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: center; /* Centraliza verticalmente (eixo principal) */
+  align-items: center;     /* Centraliza horizontalmente (eixo cruzado) */
   gap: 4px;
   min-height: 0;
 }
@@ -187,22 +206,42 @@ button {
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  /* Imagem na esquerda, texto na direita */
   min-height: 0;
-  max-height: 180px;
-  width: 100%;
+  max-height: 150px;
+  width: max-content;
 }
 
+/* Imagem Base (Visualizador Reduzido) */
 .ingredient-img {
-  max-width: 98%;
-  max-height: 100%;
+  max-width: 120px;
+  /* CONSTRAINT: Limite menor para caber na tela de edição */
+  height: 100%;
   width: auto;
-  height: auto;
   object-fit: contain;
   mix-blend-mode: multiply;
 }
 
-/* --- AJUSTES PARA O VISUALIZADOR COMPLETO (Aumentar Imagens) --- */
+.info {
+  width: 140px;
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+  flex: 1;
+}
+
+.layer-name {
+  font-size: 7px;
+  font-weight: 800;
+  color: #4b5563;
+  text-transform: uppercase;
+  line-height: 1.1;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+/* --- MODO PREVIEW / FULLSCREEN (Escala Aumentada) --- */
 .fullscreen .a4-sheet {
   width: auto;
   height: 98vh;
@@ -210,26 +249,39 @@ button {
 }
 
 .fullscreen .column {
-  padding: 10px 5px;
+  padding: 10px 8px;
 }
 
-/* Menos margem = mais espaço para imagem */
 .fullscreen .guide-title {
   font-size: 14px;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   padding-bottom: 10px;
 }
 
-.fullscreen .layer-item {
-  max-height: 250px;
-}
-
-/* Permite que a imagem cresça muito mais se houver espaço */
 .fullscreen .layers-list {
   gap: 2px;
 }
 
-/* Fullscreen Overlay */
+/* Escala vertical maior no Fullscreen */
+.fullscreen .layer-item {
+  max-height: 250px;
+}
+
+/* Escala horizontal maior no Fullscreen */
+.fullscreen .ingredient-img {
+  max-width: 280px !important;
+}
+
+/* Ajustes de tipografia e espaçamento para o Fullscreen */
+.fullscreen .info {
+  padding-left: 12px;
+}
+
+.fullscreen .layer-name {
+  font-size: 9px;
+}
+
+/* Fullscreen Overlays */
 .fullscreen {
   position: fixed;
   inset: 0;
