@@ -1,208 +1,226 @@
 <script setup>
 import { ref, computed } from 'vue'
+import ingredientsData from '../ingredients.json'
 
 const emit = defineEmits(['select-ingredient'])
 
 const searchQuery = ref('')
-const activeCategory = ref('PÃES')
+const activeCategory = ref('TODOS')
 
-const ingredients = ref([
-  { id: 1, name: 'Pão Brioche', category: 'PÃES', image: 'https://placehold.co/100x100?text=Pao' },
-  { id: 2, name: 'Pão Australiano', category: 'PÃES', image: 'https://placehold.co/100x100?text=Pao+Aus' },
-  { id: 3, name: 'Burger Bovino', category: 'PROTEÍNAS', image: 'https://placehold.co/100x100?text=Carne' },
-  { id: 4, name: 'Bacon Crispy', category: 'PROTEÍNAS', image: 'https://placehold.co/100x100?text=Bacon' },
-  { id: 5, name: 'Cheddar', category: 'QUEIJOS', image: 'https://placehold.co/100x100?text=Queijo' },
-  { id: 6, name: 'Alface Americana', category: 'OUTROS', image: 'https://placehold.co/100x100?text=Alface' },
-])
-
-const categories = ['PÃES', 'PROTEÍNAS', 'QUEIJOS', 'OUTROS']
-
-const filteredIngredients = computed(() => {
-  return ingredients.value.filter(item => {
-    const matchesCategory = item.category === activeCategory.value
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
+// Lista de categorias únicas (sem o TODOS aqui, pois ele é um estado global)
+const pureCategories = computed(() => {
+  const all = ingredientsData.map(item => item.category)
+  return [...new Set(all)]
 })
 
-const handleSelectItem = (item) => {
-  emit('select-ingredient', item)
+// Abas superiores incluindo o botão TODOS
+const tabCategories = computed(() => ['TODOS', ...pureCategories.value])
+
+// LÓGICA DE AGRUPAMENTO: Organiza os ingredientes por seções/divisórias
+const groupedIngredients = computed(() => {
+  // Filtro de busca inicial
+  const filtered = ingredientsData.filter(item => 
+    item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+
+  // Criamos o mapa de grupos
+  const groups = pureCategories.value.map(cat => ({
+    name: cat,
+    items: filtered.filter(item => item.category === cat)
+  })).filter(g => g.items.length > 0) // Remove grupos vazios na busca
+
+  // Se estiver em TODOS, retorna a ordem padrão
+  if (activeCategory.value === 'TODOS') return groups
+
+  // Se uma categoria estiver ativa, movemos o grupo dela para o primeiro lugar
+  const priorityGroup = groups.filter(g => g.name === activeCategory.value)
+  const otherGroups = groups.filter(g => g.name !== activeCategory.value)
+
+  return [...priorityGroup, ...otherGroups]
+})
+
+const selectIngredient = (ingredient) => {
+  emit('select-ingredient', ingredient)
 }
 </script>
 
 <template>
-  <aside class="sidebar-container">
-    <h2 class="sidebar-title">DESPENSA (ATIVOS)</h2>
-
-    <div class="search-box">
-      <input
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2 class="title">DESPENSA</h2>
+      <input 
         v-model="searchQuery"
-        type="text"
-        placeholder="Busca..."
+        type="text" 
+        placeholder="Buscar ingrediente..." 
         class="search-input"
       />
     </div>
 
-    <div class="categories-nav">
-      <button
-        v-for="cat in categories"
+    <nav class="category-tabs">
+      <button 
+        v-for="cat in tabCategories" 
         :key="cat"
+        class="tab-btn"
+        :class="{ active: activeCategory === cat }"
         @click="activeCategory = cat"
-        :class="{ 'active': activeCategory === cat }"
-        class="category-btn"
       >
         {{ cat }}
       </button>
-    </div>
+    </nav>
 
-    <div class="ingredients-grid-container">
-      <div class="ingredients-grid">
-        <div
-          v-for="item in filteredIngredients"
-          :key="item.id"
-          class="ingredient-card"
-          @click="handleSelectItem(item)"
-        >
-          <div class="image-wrapper">
-             <svg class="drag-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M7 19V17H9V19H7M11 19V17H13V19H11M15 19V17H17V19H15M7 15V13H9V15H7M11 15V13H13V15H11M15 15V13H17V15H15M7 11V9H9V11H7M11 11V9H13V11H11M15 11V9H17V11H15M7 7V5H9V7H7M11 7V5H13V7H11M15 7V5H17V7H15Z" /></svg>
-             <img :src="item.image" :alt="item.name" />
-          </div>
-          <span class="ingredient-name">{{ item.name }}</span>
+    <div class="scroll-container">
+      <section 
+        v-for="group in groupedIngredients" 
+        :key="group.name" 
+        class="category-section"
+      >
+        <div class="category-divider">
+          <span class="divider-text">{{ group.name }}</span>
+          <div class="divider-line"></div>
         </div>
-      </div>
+
+        <div class="ingredients-flex">
+          <div 
+            v-for="item in group.items" 
+            :key="item.id" 
+            class="ingredient-card"
+            @click="selectIngredient(item)"
+          >
+            <div class="card-image-wrapper">
+              <img :src="item.image" :alt="item.name" class="card-image" />
+            </div>
+            <p class="card-name">{{ item.name }}</p>
+          </div>
+        </div>
+      </section>
     </div>
   </aside>
 </template>
 
 <style scoped>
-.sidebar-container {
-  /* Ajustes de dimensões solicitados */
-  width: 33.33vw; 
+.sidebar {
+  width: 30%;
   height: 100vh;
-  
-  background-color: #ffffff;
+  background-color: #f9fafb;
   border-right: 1px solid #e5e7eb;
-  padding: 20px;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box; /* Garante que o padding não aumente a largura */
 }
 
-.sidebar-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: #374151;
-  margin-bottom: 18px;
-  letter-spacing: 0.05em;
-}
+.sidebar-header { padding: 15px; background: white; }
+.title { font-size: 11px; font-weight: 900; color: #1f2937; margin-bottom: 8px; }
 
 .search-input {
   width: 100%;
-  padding: 10px 14px;
-  background-color: #f9fafb;
+  padding: 8px 12px;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 14px;
-  box-sizing: border-box;
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
 }
 
-.categories-nav {
+.category-tabs {
+  display: flex;
+  gap: 5px;
+  padding: 10px;
+  overflow-x: auto;
+  background: white;
+  border-bottom: 1px solid #eee;
+}
+
+.tab-btn {
+  padding: 6px 12px;
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
+  border: none;
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.tab-btn.active { background: #fb923c; color: white; }
+
+.scroll-container {
+  flex: 1;
+  padding: 10px 15px;
+  overflow-y: auto;
+}
+
+/* --- ESTILO DAS DIVISÓRIAS --- */
+.category-section { margin-bottom: 25px; }
+
+.category-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.divider-text {
+  font-size: 10px;
+  font-weight: 900;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background-color: #e5e7eb;
+}
+
+/* --- GRID DE ITENS --- */
+.ingredients-flex {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 24px;
-}
-
-.category-btn {
-  padding: 6px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-  cursor: pointer;
-  color: #6b7280;
-  transition: all 0.2s;
-}
-
-.category-btn.active {
-  background-color: #1f2937;
-  color: white;
-  border-color: #1f2937;
-}
-
-.ingredients-grid-container {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.ingredients-grid {
-  display: grid;
-  /* Aumentei um pouco o gap já que a coluna agora é maior */
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 10px;
 }
 
 .ingredient-card {
+  background: white;
+  border: 1px solid #f1f1f1;
+  border-radius: 8px;
+  padding: 10px;
   cursor: pointer;
-  text-align: center;
+  flex: 0 0 calc(50% - 5px); /* Ajustado para 2 por linha com gap */
+  max-width: 140px;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.2s;
 }
 
-.image-wrapper {
-  position: relative;
-  aspect-ratio: 1/1;
-  border: 2px solid #f3f4f6;
-  border-radius: 12px;
+.ingredient-card:hover { border-color: #fb923c; }
+
+.card-image-wrapper {
+  width: 100%;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
-  transition: all 0.2s;
-  background-color: #fff;
 }
 
-.ingredient-card:hover .image-wrapper {
-  border-color: #fb923c;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-}
-
-.image-wrapper img {
-  max-width: 90%;
-  max-height: 90%;
+.card-image {
+  max-width: 85%;
+  max-height: 85%;
   object-fit: contain;
+  mix-blend-mode: multiply;
 }
 
-.drag-icon {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 14px;
-  height: 14px;
-  color: #d1d5db;
-  opacity: 0;
+.card-name {
+  font-size: 9px;
+  font-weight: 800;
+  color: #374151;
+  text-align: center;
+  text-transform: uppercase;
+  margin-top: 5px;
 }
 
-.ingredient-card:hover .drag-icon {
-  opacity: 1;
-}
-
-.ingredient-name {
-  display: block;
-  font-size: 11px;
-  margin-top: 6px;
-  color: #4b5563;
-  font-weight: 500;
-}
-
-/* Scrollbar fina para não poluir o visual largo */
-.ingredients-grid-container::-webkit-scrollbar {
-  width: 5px;
-}
-.ingredients-grid-container::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
-  border-radius: 10px;
-}
+/* Scrollbar fina */
+.scroll-container::-webkit-scrollbar { width: 4px; }
+.scroll-container::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
 </style>

@@ -1,0 +1,50 @@
+[
+  {
+    "id": "pao-brioche-topo",
+    "name": "Pão Brioche (Topo)",
+    "category": "PÃES",
+    "image": "/ingredients/pão-brioche-topo.png"
+  },
+  {
+    "id": "pao-brioche-base",
+    "name": "Pão Brioche (Base)",
+    "category": "PÃES",
+    "image": "/ingredients/pão-brioche-base.png"
+  },
+  {
+    "id": "carne-bovina",
+    "name": "Hambúrguer de Carne",
+    "category": "PROTEÍNAS",
+    "image": "/ingredients/carne.png"
+  },
+  {
+    "id": "bacon-fatias",
+    "name": "Bacon Crispy",
+    "category": "PROTEÍNAS",
+    "image": "/ingredients/bacon.png"
+  },
+  {
+    "id": "queijo-cheddar",
+    "name": "Fatia de Cheddar",
+    "category": "QUEIJOS",
+    "image": "/ingredients/cheddar.png"
+  },
+  {
+    "id": "alface-americana",
+    "name": "Alface",
+    "category": "SALADAS",
+    "image": "/ingredients/alface.png"
+  },
+  {
+    "id": "tomate-fatia",
+    "name": "Tomate",
+    "category": "SALADAS",
+    "image": "/ingredients/tomate.png"
+  },
+  {
+    "id": "picles-fatia",
+    "name": "Picles",
+    "category": "SALADAS",
+    "image": "/ingredients/picles.png"
+  }
+]

@@ -2,46 +2,32 @@
 import { ref } from 'vue'
 import IngredientSidebar from './components/IngredientSidebar.vue'
 import BurgerBuilder from './components/BurgerBuilder.vue'
-import ActionSidebar from './components/ActionSidebar.vue' // O novo componente
+import ActionSidebar from './components/ActionSidebar.vue'
 
+// 1. Estado centralizado do nome e das camadas
+const burgerName = ref('')
 const burgerLayers = ref([])
-const burgerName = ref('NOVO HAMBÚRGUER')
 
-const handleAddIngredient = (ingredient) => {
-  burgerLayers.value.push({
+const handleSelectIngredient = (ingredient) => {
+  burgerLayers.value.unshift({
     ...ingredient,
-    instanceId: Date.now() + Math.random().toString(36).substring(2, 9)
+    instanceId: Date.now() + Math.random()
   })
-}
-
-const handleRemoveLayer = (index) => {
-  burgerLayers.value.splice(index, 1)
-}
-
-const saveBurgerData = (layers) => {
-  console.log('Salvando dados no banco...', layers)
-  // Aqui você faria o POST para sua API (ex: Cloudflare D1 / Hono)
 }
 </script>
 
 <template>
   <div class="app-layout">
-    <IngredientSidebar 
-      class="hide-on-print"
-      @select-ingredient="handleAddIngredient" 
-    />
-
+    <IngredientSidebar @select-ingredient="handleSelectIngredient" />
+    
     <BurgerBuilder 
-      class="hide-on-print"
-      :layers="burgerLayers"
-      @update:layers="burgerLayers = $event"
-      @remove-layer="handleRemoveLayer"
+      v-model="burgerName" 
+      v-model:layers="burgerLayers" 
     />
-
+    
     <ActionSidebar 
-      :layers="burgerLayers"
-      :burgerName="burgerName"
-      @save="saveBurgerData"
+      :layers="burgerLayers" 
+      :name="burgerName" 
     />
   </div>
 </template>
