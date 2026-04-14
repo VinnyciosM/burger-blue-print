@@ -216,11 +216,13 @@ button {
 /* Imagem Base (Visualizador Reduzido) */
 .ingredient-img {
   max-width: 120px;
-  /* CONSTRAINT: Limite menor para caber na tela de edição */
-  height: 100%;
+  max-height: 120px;
   width: auto;
+  height: auto;
   object-fit: contain;
   mix-blend-mode: multiply;
+  display: block;
+  flex-shrink: 0;
 }
 
 .info {
@@ -270,6 +272,7 @@ button {
 /* Escala horizontal maior no Fullscreen */
 .fullscreen .ingredient-img {
   max-width: 280px !important;
+  max-height: 250px !important;
 }
 
 /* Ajustes de tipografia e espaçamento para o Fullscreen */
@@ -303,6 +306,8 @@ button {
   display: flex;
   gap: 10px;
   z-index: 1000;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Limpeza PNG */
