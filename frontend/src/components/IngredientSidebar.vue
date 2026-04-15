@@ -1,10 +1,12 @@
 <script setup>
 import { ref, computed } from 'vue'
-import ingredientsData from '../ingredients.json'
+import ingredientsDataJSON from '../ingredients.json'
 import NewIngredientCard from './NewIngredientCard.vue'
 import IngredientCatalog from './IngredientCatalog.vue'
 
 const emit = defineEmits(['select-ingredient'])
+
+const ingredientsData = ref(ingredientsDataJSON)
 
 const searchQuery = ref('')
 const activeCategory = ref('TODOS')
@@ -13,7 +15,7 @@ const isCatalogModalOpen = ref(false)
 
 // Lista de categorias únicas (sem o TODOS aqui, pois ele é um estado global)
 const pureCategories = computed(() => {
-  const all = ingredientsData.map(item => item.category)
+  const all = ingredientsData.value.map(item => item.category)
   return [...new Set(all)]
 })
 
@@ -23,7 +25,7 @@ const tabCategories = computed(() => ['TODOS', ...pureCategories.value])
 // LÓGICA DE AGRUPAMENTO: Organiza os ingredientes por seções/divisórias
 const groupedIngredients = computed(() => {
   // Filtro de busca inicial
-  const filtered = ingredientsData.filter(item => 
+  const filtered = ingredientsData.value.filter(item => 
     item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 
@@ -45,6 +47,13 @@ const groupedIngredients = computed(() => {
 
 const selectIngredient = (ingredient) => {
   emit('select-ingredient', ingredient)
+}
+
+const handleDeleteIngredient = (ingredientId) => {
+  const index = ingredientsData.value.findIndex(item => item.id === ingredientId)
+  if (index > -1) {
+    ingredientsData.value.splice(index, 1)
+  }
 }
 </script>
 
@@ -116,6 +125,7 @@ const selectIngredient = (ingredient) => {
     v-if="isCatalogModalOpen"
     :ingredients="ingredientsData"
     @close="isCatalogModalOpen = false"
+    @delete-ingredient="handleDeleteIngredient"
   />
 </template>
 

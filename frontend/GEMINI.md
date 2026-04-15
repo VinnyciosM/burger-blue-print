@@ -1,10 +1,10 @@
-# digital-loyalty-card Project Overview for Gemini
+# burger-blue-print Project Overview for Gemini
 
-This document provides a comprehensive overview of the `digital-loyalty-card` project, generated to assist the Gemini CLI in understanding its structure, purpose, and operational procedures.
+This document provides a comprehensive overview of the `burger-blue-print` project, generated to assist the Gemini CLI in understanding its structure, purpose, and operational procedures.
 
 ## Project Overview
 
-The `digital-loyalty-card` is a web application built using **Vue 3** and **Vite**, designed to function as a digital loyalty card system. It is a modern JavaScript project utilizing `type: module` for its module system.
+The `burger-blue-print` is a web application built using **Vue 3** and **Vite**, designed to function as a digital loyalty card system. It is a modern JavaScript project utilizing `type: module` for its module system.
 
 ## Building and Running
 
