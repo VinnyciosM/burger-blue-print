@@ -1,41 +1,62 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import IngredientSidebar from './components/IngredientSidebar.vue'
 import BurgerBuilder from './components/BurgerBuilder.vue'
 import ActionSidebar from './components/ActionSidebar.vue'
 
-// --- STATE MANAGEMENT ---
-
-// Index of the guide currently being edited (0, 1, or 2)
 const activeIndex = ref(0)
 
-// Array containing the data for all 3 guides on the A4 sheet
-const guides = ref([
-  { name: '', layers: [] }, // Guide 1
-  { name: '', layers: [] }, // Guide 2
-  { name: '', layers: [] }  // Guide 3
+// 1. Tenta carregar a sessão atual do LocalStorage; se não houver, inicia vazio
+const guides = ref(JSON.parse(localStorage.getItem('drakon_current_session')) || [
+  { name: '', layers: [] },
+  { name: '', layers: [] },
+  { name: '', layers: [] }
 ])
 
-// --- METHODS ---
+// 2. Lista de projetos arquivados no Gerenciador
+const savedProjects = ref(JSON.parse(localStorage.getItem('drakon_history')) || [])
 
-/**
- * Adds a new ingredient to the top of the currently active guide
- * @param {Object} ingredient - The ingredient object from JSON
- */
-const handleSelectIngredient = (ingredient) => {
-  // We use unshift to add to the top (visual stack order)
-  guides.value[activeIndex.value].layers.unshift({
-    ...ingredient,
-    instanceId: Date.now() + Math.random() // Unique ID for Vue's v-for and Drag & Drop
-  })
+// --- LOGICA DE PERSISTÊNCIA ---
+
+// Auto-save: Sempre que você mudar algo no visualizador, ele salva no navegador
+watch(guides, (newVal) => {
+  localStorage.setItem('drakon_current_session', JSON.stringify(newVal))
+}, { deep: true })
+
+// Salva o histórico sempre que um novo projeto for arquivado
+watch(savedProjects, (newVal) => {
+  localStorage.setItem('drakon_history', JSON.stringify(newVal))
+}, { deep: true })
+
+const activeProjectId = ref(1) // Começa no primeiro
+
+const handleNewProject = () => {
+  const newId = savedProjects.value.length + 1
+  
+  const newProject = {
+    id: newId,
+    name: `Lanche ${newId}`,
+    data: [ { name: '', layers: [] }, { name: '', layers: [] }, { name: '', layers: [] } ]
+  }
+
+  // Usamos push para manter a ordem estável na lista
+  savedProjects.value.push(newProject)
+  
+  // Muda o foco para a nova guia criada
+  activeProjectId.value = newId
+  guides.value = newProject.data
+  activeIndex.value = 0
+}
+
+const handleLoadProject = (project) => {
+  activeProjectId.value = project.id // Atualiza qual ID está sendo editado
+  guides.value = JSON.parse(JSON.stringify(project.data))
 }
 </script>
 
 <template>
   <div class="app-layout">
-    <IngredientSidebar 
-      @select-ingredient="handleSelectIngredient" 
-    />
+    <IngredientSidebar @select-ingredient="handleSelectIngredient" />
     
     <BurgerBuilder 
       :key="`builder-${activeIndex}`"
@@ -45,7 +66,10 @@ const handleSelectIngredient = (ingredient) => {
     
     <ActionSidebar 
       :guides="guides" 
+      :saved-projects="savedProjects"
       v-model:activeIndex="activeIndex" 
+      @new-project="handleNewProject"
+      @load-project="handleLoadProject"
     />
   </div>
 </template>

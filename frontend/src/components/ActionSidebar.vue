@@ -5,10 +5,12 @@ import GuideManager from './GuideManager.vue'
 
 const props = defineProps({
   guides: { type: Array, required: true },
-  activeIndex: { type: Number, default: 0 }
+  activeIndex: { type: Number, default: 0 },
+  savedProjects: { type: Array, default: () => [] }
 })
 
-const emit = defineEmits(['update:activeIndex'])
+// Adicionado 'load-project' para permitir o carregamento
+const emit = defineEmits(['update:activeIndex', 'new-project', 'load-project'])
 const isPreviewMode = ref(false)
 
 const togglePreview = () => isPreviewMode.value = !isPreviewMode.value
@@ -77,7 +79,12 @@ const exportAsImage = () => {
       PREVIEW
     </button>
 
-    <GuideManager/>
+   <GuideManager 
+      :projects="savedProjects" 
+      :current-guides="guides"
+      @create-new="$emit('new-project')" 
+      @select-project="$emit('load-project', $event)" 
+    />
 
   </aside>
 </template>
