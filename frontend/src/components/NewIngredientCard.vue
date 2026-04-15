@@ -93,7 +93,7 @@ const handleSave = () => {
 <style scoped>
 /* Estilos mantidos conforme o layout de duas colunas solicitado */
 .overlay { position: fixed; inset: 0; background: rgba(17, 24, 39, 0.9); display: flex; justify-content: center; align-items: center; z-index: 10000; padding: 20px; }
-.ingredient-card { background: #fff; width: 100%; max-width: 650px; border-radius: 16px; padding: 30px; display: flex; flex-direction: column; gap: 24px; }
+.ingredient-card { background: #fff; width: 100%; max-width: 650px; border-radius: 16px; padding: 30px; display: flex; flex-direction: column; gap: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); }
 .card-header { display: flex; justify-content: space-between; border-bottom: 2px dashed #f3f4f6; padding-bottom: 15px; }
 .title { font-size: 13px; font-weight: 900; letter-spacing: 1px; margin: 0; }
 .btn-close { background: none; border: none; font-size: 24px; color: #9ca3af; cursor: pointer; }

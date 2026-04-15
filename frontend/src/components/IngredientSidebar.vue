@@ -2,11 +2,14 @@
 import { ref, computed } from 'vue'
 import ingredientsData from '../ingredients.json'
 import NewIngredientCard from './NewIngredientCard.vue'
+import IngredientCatalog from './IngredientCatalog.vue'
 
 const emit = defineEmits(['select-ingredient'])
 
 const searchQuery = ref('')
 const activeCategory = ref('TODOS')
+const isNewModalOpen = ref(false)
+const isCatalogModalOpen = ref(false)
 
 // Lista de categorias únicas (sem o TODOS aqui, pois ele é um estado global)
 const pureCategories = computed(() => {
@@ -54,7 +57,7 @@ const selectIngredient = (ingredient) => {
           placeholder="Buscar ingrediente..." 
           class="search-input"
         />
-        <button class="btn-add-quick" @click="isNewModalOpen = true" title="Novo Ingrediente">
+        <button class="btn-add-ingredient" @click="isNewModalOpen = true" title="Novo Ingrediente">
           +
         </button>
       </div>
@@ -104,7 +107,16 @@ const selectIngredient = (ingredient) => {
       </button>
     </div>
   </aside>
- <!--  <NewIngredientCard/> -->
+  <NewIngredientCard 
+    v-if="isNewModalOpen" 
+    @close="isNewModalOpen = false"
+    @save="isNewModalOpen = false"
+  />
+  <IngredientCatalog
+    v-if="isCatalogModalOpen"
+    :ingredients="ingredientsData"
+    @close="isCatalogModalOpen = false"
+  />
 </template>
 
 <style scoped>
@@ -255,7 +267,7 @@ const selectIngredient = (ingredient) => {
   border-radius: 8px;
 }
 
-.btn-add-quick {
+.btn-add-ingredient{
   width: 42px;
   background: #fb923c; /* Laranja Drakon */
   color: white;
