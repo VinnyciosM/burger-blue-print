@@ -61,6 +61,27 @@ const handleSelectIngredient = (ingredient) => {
     instanceId: Date.now() + Math.random()
   })
 }
+
+const handleDeleteProject = (projectId) => {
+  // 1. Remove da lista de projetos salvos
+  savedProjects.value = savedProjects.value.filter(p => p.id !== projectId)
+  
+  // 2. Se a lista ficar vazia, cria um projeto em branco por segurança
+  if (savedProjects.value.length === 0) {
+    const newId = 1
+    const emptyData = [{ name: '', layers: [] }, { name: '', layers: [] }, { name: '', layers: [] }]
+    savedProjects.value.push({ id: newId, name: 'Lanche 1', data: emptyData })
+    activeProjectId.value = newId
+    guides.value = JSON.parse(JSON.stringify(emptyData))
+    activeIndex.value = 0
+    return
+  }
+
+  // 3. Se apagou o projeto que estava aberto na tela, carrega o primeiro que sobrou
+  if (activeProjectId.value === projectId) {
+    handleLoadProject(savedProjects.value[0])
+  }
+}
 </script>
 
 <template>
@@ -79,6 +100,7 @@ const handleSelectIngredient = (ingredient) => {
       v-model:activeIndex="activeIndex" 
       @new-project="handleNewProject"
       @load-project="handleLoadProject"
+      @delete-project="handleDeleteProject"
       :active-id="activeProjectId"
     />
   </div>

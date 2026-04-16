@@ -7,13 +7,17 @@ const props = defineProps({
   guides: { type: Array, required: true },
   activeIndex: { type: Number, default: 0 },
   savedProjects: { type: Array, default: () => [] },
-  activeId: { type: Number, default: 1 } // Recebe o ID do App.vue
+  activeId: { type: Number, default: 1 } 
 })
 
-const emit = defineEmits(['update:activeIndex', 'new-project', 'load-project'])
+const emit = defineEmits(['update:activeIndex', 'new-project', 'load-project', 'delete-project'])
 const isPreviewMode = ref(false)
 
 const togglePreview = () => isPreviewMode.value = !isPreviewMode.value
+
+const isManagerExpanded = ref(false)
+const toggleManager = () => isManagerExpanded.value = !isManagerExpanded.value
+
 
 const exportAsImage = () => {
   const element = document.getElementById('printable-a4')
@@ -32,7 +36,7 @@ const exportAsImage = () => {
 
 <template>
   <aside class="sidebar">
-    <div class="canvas-area" :class="{ 'fullscreen': isPreviewMode }">
+    <div class="canvas-area" :class="{ 'fullscreen': isPreviewMode }" v-show="!isManagerExpanded">
       <div v-if="isPreviewMode" class="overlay" @click="togglePreview"></div>
 
       <div v-if="isPreviewMode" class="toolbar">
@@ -68,11 +72,18 @@ const exportAsImage = () => {
       <button class="btn-preview-blue" @click="togglePreview">
         PREVIEW
       </button>
-
     </div>
 
-    <GuideManager class="guide-manager" :projects="savedProjects" :active-id="activeId" @create-new="$emit('new-project')"
-      @select-project="$emit('load-project', $event)" />
+    <GuideManager 
+      class="guide-manager" 
+      :projects="savedProjects" 
+      :active-id="activeId" 
+      :is-expanded="isManagerExpanded"
+      @create-new="$emit('new-project')"
+      @select-project="$emit('load-project', $event)" 
+      @delete-project="$emit('delete-project', $event)"
+      @toggle-expand="toggleManager"
+    />
 
   </aside>
 </template>
@@ -89,14 +100,16 @@ const exportAsImage = () => {
   font-size: 14px;
   cursor: pointer;
   letter-spacing: 1px;
-  margin: 16px 0px;
+  margin-top: 16px;
 }
 
 .sidebar {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  padding-right: 16px;
+  padding-left: 16px ;
+  padding-right: 16px ;
 }
 
 .label {

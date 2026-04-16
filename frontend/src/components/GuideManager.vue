@@ -1,14 +1,35 @@
 <script setup>
+import { ref } from 'vue'
+import DeleteConfirmModal from './DeleteConfirmModal.vue'
+
 const props = defineProps({
   projects: { type: Array, default: () => [] },
-  activeId: { type: Number, default: null } // Recebe o ID ativo do App.vue
+  activeId: { type: Number, default: null },
+  isExpanded: { type: Boolean, default: false }
 })
-defineEmits(['create-new', 'select-project'])
+
+const emit = defineEmits(['create-new', 'select-project', 'toggle-expand', 'delete-project'])
+
+// Estado para controlar o modal de exclusão
+const projectToDelete = ref(null)
+
+const confirmDelete = () => {
+  if (projectToDelete.value) {
+    emit('delete-project', projectToDelete.value.id)
+    projectToDelete.value = null
+  }
+}
 </script>
 
 <template>
   <div class="manager-container">
-    <h2 class="manager-title">GERENCIADOR DE GUIAS</h2>
+
+    <div class="manager-title-container">
+      <span class="manager-title">GERENCIADOR DE GUIAS</span>
+      <button class="btn-toggle-manager" @click="$emit('toggle-expand')">
+        <span>{{ isExpanded ? '⤡ REDUZIR GERENCIADOR DE GUIAS' : '⤢ EXPANDIR GERENCIADOR DE GUIAS' }}</span> 
+      </button>
+    </div>
 
     <div class="manager-scroll">
       <div class="manager-card add-card" @click="$emit('create-new')">
@@ -19,7 +40,15 @@ defineEmits(['create-new', 'select-project'])
       </div>
 
       <div v-for="project in projects" :key="project.id" class="manager-card thumb-card"
-        :class="{ 'is-editing': project.id === activeId }" @click="$emit('select-project', project)">
+        :class="{ 'is-editing': project.id === activeId }" @click="$emit('select-project', project, $emit('toggle-expand'))">
+        
+        <button class="btn-delete-guide" @click.stop="projectToDelete = project" title="Deletar Guia">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+          </svg>
+        </button>
+
         <div v-if="project.id === activeId" class="status-badge">EDITANDO</div>
 
         <div class="project-header">
@@ -39,10 +68,50 @@ defineEmits(['create-new', 'select-project'])
         <span class="project-id-tag">#{{ project.id }}</span>
       </div>
     </div>
+
+    <DeleteConfirmModal 
+      v-if="projectToDelete" 
+      :item-name="projectToDelete.name" 
+      @confirm="confirmDelete"
+      @cancel="projectToDelete = null" 
+    />
   </div>
 </template>
 
 <style scoped>
+.manager-title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  padding-bottom: 10px;
+  margin-top: 16px;
+}
+
+.manager-title{
+  margin: 0;
+  font-weight: 900;
+  color: #374151;
+}
+
+.btn-toggle-manager {
+  background: #f9fafb;
+  color: #6b7280;
+  border: 2px solid #d1d5db;
+  border-radius: 6px;
+  font-weight: 800;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  padding: 2px 14px;
+}
+
+.btn-toggle-manager:hover {
+  background: #e5e7eb;
+  color: #374151;
+  border-color: #9ca3af;
+}
+
 .manager-container {
   display: flex;
   flex-direction: column;
@@ -52,18 +121,17 @@ defineEmits(['create-new', 'select-project'])
 .manager-scroll {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  
+  gap: 15px;
   overflow-y: auto;
   overflow-x: hidden;
   height: 100%;
   padding-bottom: 16px;
-  padding-right: 16px; 
+  padding-right: 16px;
 }
 
 .manager-card {
-  width: 100%; 
-  height: 200px; 
+  width: 100%;
+  height: 225px;
   background: white;
   border-radius: 8px;
   border: 1px solid #d1d5db;
@@ -75,22 +143,43 @@ defineEmits(['create-new', 'select-project'])
   transition: all 0.2s ease;
 }
 
-
-.manager-title {
-  font-size: 13px;
-  font-weight: 900;
-  color: #1f2937;
-  text-transform: uppercase;
-  margin: 0;
-  padding-bottom: 16px;
-}
-
 .is-editing {
   border: 2px solid #fb923c !important;
   background: #fffaf7;
   box-shadow: 0 4px 12px rgba(251, 146, 60, 0.2);
 }
 
+.btn-delete-guide {
+  position: absolute;
+  top: 8px;
+  right: 8px; 
+  width: 30px;
+  height: 30px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0; 
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 10;
+}
+
+.btn-delete-guide:hover {
+  transform: scale(1.1);
+  background: #dc2626;
+}
+
+.manager-card:hover .btn-delete-guide {
+  opacity: 1; /* Aparece ao passar o mouse sobre o card */
+}
+
+/* O resto do seu CSS continua igual */
 .status-badge {
   position: absolute;
   top: 0;
@@ -201,22 +290,8 @@ defineEmits(['create-new', 'select-project'])
   margin-top: 0;
 }
 
-/* Barra de rolagem (Scrollbar) Vertical Customizada */
-.manager-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-
-.manager-scroll::-webkit-scrollbar-track {
-  background: #f3f4f6;
-  border-radius: 10px;
-}
-
-.manager-scroll::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 10px;
-}
-
-.manager-scroll::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
-}
+.manager-scroll::-webkit-scrollbar { width: 6px; }
+.manager-scroll::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 10px; }
+.manager-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+.manager-scroll::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 </style>
