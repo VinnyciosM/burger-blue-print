@@ -32,11 +32,6 @@ const exportAsImage = () => {
 
 <template>
   <aside class="sidebar">
-    <!--     <div class="header">
-      <span class="label">FINALIZAÇÃO</span>
-      <button class="btn-primary" @click="togglePreview">MODO PREVIEW</button>
-    </div> -->
-
     <div class="canvas-area" :class="{ 'fullscreen': isPreviewMode }">
       <div v-if="isPreviewMode" class="overlay" @click="togglePreview"></div>
 
@@ -69,13 +64,15 @@ const exportAsImage = () => {
           </div>
         </div>
       </div>
+
+      <button class="btn-preview-blue" @click="togglePreview">
+        PREVIEW
+      </button>
+
     </div>
 
-    <button class="btn-preview-blue" @click="togglePreview">
-      PREVIEW
-    </button>
-
-   <GuideManager :projects="savedProjects" :active-id="activeId" @create-new="$emit('new-project')" @select-project="$emit('load-project', $event)" />
+    <GuideManager class="guide-manager" :projects="savedProjects" :active-id="activeId" @create-new="$emit('new-project')"
+      @select-project="$emit('load-project', $event)" />
 
   </aside>
 </template>
@@ -92,26 +89,14 @@ const exportAsImage = () => {
   font-size: 14px;
   cursor: pointer;
   letter-spacing: 1px;
-  margin-top: 10px;
-  margin-bottom: 16px;
+  margin: 16px 0px;
 }
-
 
 .sidebar {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  background: #f3f4f6;
-  overflow: hidden;
-}
-
-.header {
-  padding: 20px;
-  border: 2px dashed #d1d5db;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  text-align: center;
+  padding: 16px;
 }
 
 .label {
@@ -156,7 +141,6 @@ button {
 .a4-sheet {
   background: #fff;
   aspect-ratio: 297/210;
-  width: 100%;
   display: flex;
   position: relative;
   z-index: 10;
