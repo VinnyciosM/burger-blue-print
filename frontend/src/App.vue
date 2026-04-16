@@ -4,53 +4,78 @@ import IngredientSidebar from './components/IngredientSidebar.vue'
 import BurgerBuilder from './components/BurgerBuilder.vue'
 import ActionSidebar from './components/ActionSidebar.vue'
 
+// Índice da coluna (Guia) que está sendo editada no momento (0, 1 ou 2)
 const activeIndex = ref(0)
 
-// 1. Tenta carregar a sessão atual do LocalStorage; se não houver, inicia vazio
+// 1. Estado das 3 colunas atuais (Sessão Ativa)
+// Tenta carregar do LocalStorage para não perder dados ao atualizar a página
 const guides = ref(JSON.parse(localStorage.getItem('drakon_current_session')) || [
   { name: '', layers: [] },
   { name: '', layers: [] },
   { name: '', layers: [] }
 ])
 
-// 2. Lista de projetos arquivados no Gerenciador
+// 2. Histórico de projetos arquivados no Gerenciador
 const savedProjects = ref(JSON.parse(localStorage.getItem('drakon_history')) || [])
 
-// --- LOGICA DE PERSISTÊNCIA ---
+// --- LÓGICA DE PERSISTÊNCIA (LocalStorage) ---
 
-// Auto-save: Sempre que você mudar algo no visualizador, ele salva no navegador
+// Auto-save: Salva as 3 colunas atuais sempre que houver qualquer mudança
 watch(guides, (newVal) => {
   localStorage.setItem('drakon_current_session', JSON.stringify(newVal))
 }, { deep: true })
 
-// Salva o histórico sempre que um novo projeto for arquivado
+// Salva o histórico de projetos arquivados
 watch(savedProjects, (newVal) => {
   localStorage.setItem('drakon_history', JSON.stringify(newVal))
 }, { deep: true })
 
-const activeProjectId = ref(1) // Começa no primeiro
+// --- AÇÕES DO SISTEMA ---
 
+/**
+ * Arquiva o lanche atual no gerenciador e limpa o visualizador para um novo início
+ */
 const handleNewProject = () => {
-  const newId = savedProjects.value.length + 1
-  
-  const newProject = {
-    id: newId,
-    name: `Lanche ${newId}`,
-    data: [ { name: '', layers: [] }, { name: '', layers: [] }, { name: '', layers: [] } ]
+  // Cria uma cópia (snapshot) dos dados atuais
+  const projectToArchive = {
+    id: savedProjects.value.length + 1, // ID Numérico sequencial
+    // Usa o nome de qualquer uma das guias como título do projeto
+    name: guides.value[0].name || guides.value[1].name || guides.value[2].name || `Lanche ${savedProjects.value.length + 1}`,
+    data: JSON.parse(JSON.stringify(guides.value)), // Cópia profunda para evitar vínculos
+    timestamp: new Date().toLocaleString()
   }
 
-  // Usamos push para manter a ordem estável na lista
-  savedProjects.value.push(newProject)
+  // Adiciona ao final da lista para manter a ordem estável no gerenciador
+  savedProjects.value.push(projectToArchive)
+
+  // Reseta as 3 colunas para o estado vazio
+  guides.value = [
+    { name: '', layers: [] },
+    { name: '', layers: [] },
+    { name: '', layers: [] }
+  ]
   
-  // Muda o foco para a nova guia criada
-  activeProjectId.value = newId
-  guides.value = newProject.data
   activeIndex.value = 0
+  alert("Projeto arquivado e visualizador limpo!")
 }
 
+/**
+ * Carrega um projeto salvo anteriormente de volta para as 3 colunas de edição
+ */
 const handleLoadProject = (project) => {
-  activeProjectId.value = project.id // Atualiza qual ID está sendo editado
+  // Substitui os guias atuais pelos dados do projeto selecionado
   guides.value = JSON.parse(JSON.stringify(project.data))
+  activeIndex.value = 0 // Foca na primeira coluna por padrão
+}
+
+/**
+ * Adiciona um ingrediente selecionado na coluna (guia) ativa
+ */
+const handleSelectIngredient = (ingredient) => {
+  guides.value[activeIndex.value].layers.unshift({
+    ...ingredient,
+    instanceId: Date.now() + Math.random() // Gera ID único para cada camada
+  })
 }
 </script>
 

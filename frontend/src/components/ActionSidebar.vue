@@ -6,10 +6,10 @@ import GuideManager from './GuideManager.vue'
 const props = defineProps({
   guides: { type: Array, required: true },
   activeIndex: { type: Number, default: 0 },
-  savedProjects: { type: Array, default: () => [] }
+  savedProjects: { type: Array, default: () => [] },
+  activeId: { type: Number, default: null } // ID que vem do App.vue
 })
 
-// Adicionado 'load-project' para permitir o carregamento
 const emit = defineEmits(['update:activeIndex', 'new-project', 'load-project'])
 const isPreviewMode = ref(false)
 
@@ -18,7 +18,6 @@ const togglePreview = () => isPreviewMode.value = !isPreviewMode.value
 const exportAsImage = () => {
   const element = document.getElementById('printable-a4')
   element.classList.add('clean')
-
   html2canvas(element, {
     allowTaint: true,
     useCORS: true,
