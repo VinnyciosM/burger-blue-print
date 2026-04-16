@@ -4,77 +4,61 @@ import IngredientSidebar from './components/IngredientSidebar.vue'
 import BurgerBuilder from './components/BurgerBuilder.vue'
 import ActionSidebar from './components/ActionSidebar.vue'
 
-// Índice da coluna (Guia) que está sendo editada no momento (0, 1 ou 2)
 const activeIndex = ref(0)
+const activeProjectId = ref(1) // Rastreia qual projeto está na tela
 
-// 1. Estado das 3 colunas atuais (Sessão Ativa)
-// Tenta carregar do LocalStorage para não perder dados ao atualizar a página
-const guides = ref(JSON.parse(localStorage.getItem('drakon_current_session')) || [
-  { name: '', layers: [] },
-  { name: '', layers: [] },
-  { name: '', layers: [] }
+// 1. Carrega o histórico ou inicia com o primeiro projeto
+const savedProjects = ref(JSON.parse(localStorage.getItem('drakon_history')) || [
+  { 
+    id: 1, 
+    name: 'Lanche 1', 
+    data: [{ name: '', layers: [] }, { name: '', layers: [] }, { name: '', layers: [] }] 
+  }
 ])
 
-// 2. Histórico de projetos arquivados no Gerenciador
-const savedProjects = ref(JSON.parse(localStorage.getItem('drakon_history')) || [])
+// 2. Estado do editor sincronizado com o projeto ativo
+const guides = ref(JSON.parse(localStorage.getItem('drakon_current_session')) || 
+  JSON.parse(JSON.stringify(savedProjects.value[0].data))
+)
 
-// --- LÓGICA DE PERSISTÊNCIA (LocalStorage) ---
-
-// Auto-save: Salva as 3 colunas atuais sempre que houver qualquer mudança
+// Sincroniza o editor de volta para a lista em tempo real
 watch(guides, (newVal) => {
   localStorage.setItem('drakon_current_session', JSON.stringify(newVal))
+  
+  const index = savedProjects.value.findIndex(p => p.id === activeProjectId.value)
+  if (index !== -1) {
+    savedProjects.value[index].data = JSON.parse(JSON.stringify(newVal))
+    savedProjects.value[index].name = newVal[0].name || newVal[1].name || newVal[2].name || `Lanche ${activeProjectId.value}`
+  }
 }, { deep: true })
 
-// Salva o histórico de projetos arquivados
 watch(savedProjects, (newVal) => {
   localStorage.setItem('drakon_history', JSON.stringify(newVal))
 }, { deep: true })
 
-// --- AÇÕES DO SISTEMA ---
-
-/**
- * Arquiva o lanche atual no gerenciador e limpa o visualizador para um novo início
- */
 const handleNewProject = () => {
-  // Cria uma cópia (snapshot) dos dados atuais
-  const projectToArchive = {
-    id: savedProjects.value.length + 1, // ID Numérico sequencial
-    // Usa o nome de qualquer uma das guias como título do projeto
-    name: guides.value[0].name || guides.value[1].name || guides.value[2].name || `Lanche ${savedProjects.value.length + 1}`,
-    data: JSON.parse(JSON.stringify(guides.value)), // Cópia profunda para evitar vínculos
-    timestamp: new Date().toLocaleString()
+  const newId = savedProjects.value.length + 1
+  const newProject = {
+    id: newId,
+    name: `Lanche ${newId}`,
+    data: [{ name: '', layers: [] }, { name: '', layers: [] }, { name: '', layers: [] }]
   }
-
-  // Adiciona ao final da lista para manter a ordem estável no gerenciador
-  savedProjects.value.push(projectToArchive)
-
-  // Reseta as 3 colunas para o estado vazio
-  guides.value = [
-    { name: '', layers: [] },
-    { name: '', layers: [] },
-    { name: '', layers: [] }
-  ]
-  
+  savedProjects.value.push(newProject)
+  activeProjectId.value = newId
+  guides.value = JSON.parse(JSON.stringify(newProject.data))
   activeIndex.value = 0
-  alert("Projeto arquivado e visualizador limpo!")
 }
 
-/**
- * Carrega um projeto salvo anteriormente de volta para as 3 colunas de edição
- */
 const handleLoadProject = (project) => {
-  // Substitui os guias atuais pelos dados do projeto selecionado
+  activeProjectId.value = project.id
   guides.value = JSON.parse(JSON.stringify(project.data))
-  activeIndex.value = 0 // Foca na primeira coluna por padrão
+  activeIndex.value = 0
 }
 
-/**
- * Adiciona um ingrediente selecionado na coluna (guia) ativa
- */
 const handleSelectIngredient = (ingredient) => {
   guides.value[activeIndex.value].layers.unshift({
     ...ingredient,
-    instanceId: Date.now() + Math.random() // Gera ID único para cada camada
+    instanceId: Date.now() + Math.random()
   })
 }
 </script>
@@ -95,6 +79,7 @@ const handleSelectIngredient = (ingredient) => {
       v-model:activeIndex="activeIndex" 
       @new-project="handleNewProject"
       @load-project="handleLoadProject"
+      :active-id="activeProjectId"
     />
   </div>
 </template>

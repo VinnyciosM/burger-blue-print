@@ -7,7 +7,7 @@ const props = defineProps({
   guides: { type: Array, required: true },
   activeIndex: { type: Number, default: 0 },
   savedProjects: { type: Array, default: () => [] },
-  activeId: { type: Number, default: null } // ID que vem do App.vue
+  activeId: { type: Number, default: 1 } // Recebe o ID do App.vue
 })
 
 const emit = defineEmits(['update:activeIndex', 'new-project', 'load-project'])
@@ -19,10 +19,7 @@ const exportAsImage = () => {
   const element = document.getElementById('printable-a4')
   element.classList.add('clean')
   html2canvas(element, {
-    allowTaint: true,
-    useCORS: true,
-    backgroundColor: '#ffffff',
-    scale: 3
+    allowTaint: true, useCORS: true, backgroundColor: '#ffffff', scale: 3
   }).then((canvas) => {
     const link = document.createElement('a')
     link.download = `guia-drakon-final.png`
@@ -78,12 +75,7 @@ const exportAsImage = () => {
       PREVIEW
     </button>
 
-   <GuideManager 
-      :projects="savedProjects" 
-      :current-guides="guides"
-      @create-new="$emit('new-project')" 
-      @select-project="$emit('load-project', $event)" 
-    />
+   <GuideManager :projects="savedProjects" :active-id="activeId" @create-new="$emit('new-project')" @select-project="$emit('load-project', $event)" />
 
   </aside>
 </template>
